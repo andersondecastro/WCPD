@@ -1,8 +1,9 @@
 pragma solidity ^0.4.20;
 
 
-contract CompreEVenda {
+contract DiaZero {
     
+    address desenvolvedor;
     address comprador;
     address vendedor;
     struct Imovel {
@@ -14,8 +15,10 @@ contract CompreEVenda {
     uint quantidadeImoveis;
     mapping (uint => Imovel) imoveis;
     
-    function CompreEVenda() {
+    // construtor 
+    function DiaZero() {
         quantidadeImoveis = 0;
+        desenvolvedor = msg.sender;
     }
     
     function publicarImovel(uint _preco) {
@@ -31,8 +34,19 @@ contract CompreEVenda {
         require( imovel.aVenda );
         require( imovel.preco <= msg.value );
         require( imovel.proprietario != msg.sender );
+       
         
-        imovel.proprietario.transfer(imovel.preco);
+        var valorDesenvolvedor = imovel.preco / 10;
+        var valorVendedor = imovel.preco - valorDesenvolvedor;
+        
+        imovel.proprietario.transfer(valorVendedor);
+        desenvolvedor.send(valorDesenvolvedor);
+        
+        
+        if(imovel.preco < msg.value) {
+            var trocoDevolver = msg.value - imovel.preco;
+            msg.sender.transfer(trocoDevolver);
+        }
         
         imovel.proprietario = msg.sender; 
         imovel.aVenda = false;
@@ -43,5 +57,10 @@ contract CompreEVenda {
         
         return (imovel.proprietario, imovel.aVenda, imovel.preco);
     }
+    
+    function saldoDesenvolvedor() view returns (address, uint) {
+        return (desenvolvedor, desenvolvedor.balance);
+    }
+
     
 }
